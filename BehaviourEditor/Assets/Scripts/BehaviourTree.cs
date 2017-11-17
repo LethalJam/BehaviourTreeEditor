@@ -12,20 +12,24 @@ public enum Response
 // Base class for a node
 public abstract class Node
 {
-    abstract public Response tick();
+    abstract public Response tick(ref TankBehaviour tank);
+    public void addChild(Node node)
+    {
+        children.Add(node);
+    }
     protected List<Node> children = new List<Node>();
 }
 
 // Selector node
 public class SelectorNode : Node
 {
-    public override Response tick()
+    public override Response tick(ref TankBehaviour tank)
     {
         // Iterate through all children to try and find one that succeeds or is running
         foreach (Node n in children)
         {
             Response childResponse;
-            childResponse = n.tick();
+            childResponse = n.tick(ref tank);
 
             if (childResponse == Response.running
                 || childResponse == Response.success)
@@ -38,17 +42,16 @@ public class SelectorNode : Node
         return Response.failure;
     }
 }
-
 // Sequence node
 public class SequenceNode : Node
 {
-    public override Response tick()
+    public override Response tick(ref TankBehaviour tank)
     {
         // Iterate through all children to try and find one that succeeds or is running
         foreach (Node n in children)
         {
             Response childResponse;
-            childResponse = n.tick();
+            childResponse = n.tick(ref tank);
 
             if (childResponse == Response.running
                 || childResponse == Response.failure)
@@ -61,13 +64,49 @@ public class SequenceNode : Node
         return Response.success;
     }
 }
-
 // Node for checking if there is anything in front of the tank
 public class checkForwardNode : Node
 {
-    public override Response tick()
+    public override Response tick(ref TankBehaviour tank)
     {
-        throw new NotImplementedException();
+        if (tank.checkObstructed(tank.transform.up))
+            return Response.success;
+        else
+            return Response.failure;
+    }
+}
+
+// Tank movements
+public class moveForwardNode : Node
+{
+    public override Response tick(ref TankBehaviour tank)
+    {
+        tank.moveForward();
+        return Response.running;
+    }
+}
+public class moveBackwardsNode : Node
+{
+    public override Response tick(ref TankBehaviour tank)
+    {
+        tank.moveBackwards();
+        return Response.running;
+    }
+}
+public class rotateLeftNode : Node
+{
+    public override Response tick(ref TankBehaviour tank)
+    {
+        tank.rotateLeft();
+        return Response.running;
+    }
+}
+public class rotateRightNode : Node
+{
+    public override Response tick(ref TankBehaviour tank)
+    {
+        tank.rotateRight();
+        return Response.running;
     }
 }
 
@@ -84,10 +123,31 @@ public class BehaviourTree : MonoBehaviour {
         tank = gameObject.GetComponent<TankBehaviour>();
         if (tank == null)
             this.enabled = false;
+        //testConstructor();
 	}
 	
+    public Node getRoot()
+    {
+        return root; 
+    }
+
 	// Update each frame by sending a signal through the root-node.
 	void Update () {
-        root.tick();
+        root.tick(ref tank);
 	}
+
+    // Simple behaviour for testing purposes
+    void testConstructor()
+    {
+        SequenceNode origin = new SequenceNode();
+
+        SelectorNode newSelect = new SelectorNode();
+        newSelect.addChild(new checkForwardNode());
+        newSelect.addChild(new moveForwardNode());
+        origin.addChild(newSelect);
+
+        origin.addChild(new rotateRightNode());
+
+        root.addChild(origin);
+    }
 }

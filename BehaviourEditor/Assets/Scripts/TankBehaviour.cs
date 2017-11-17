@@ -38,10 +38,12 @@ public class TankBehaviour : MonoBehaviour {
     public void rotateLeft()
     {
         transform.Rotate(transform.forward, rotationspeed);
+      
     }
     public void rotateRight()
     {
         transform.Rotate(transform.forward, -rotationspeed);
+        print("rotating");
     }
     // Shoot command
     public void shoot()
@@ -67,14 +69,14 @@ public class TankBehaviour : MonoBehaviour {
     }
 
     // FOR TESTING PURPOSES
-    void Update()
-    {
-        moveForward();
-        rotateLeft();
-        checkObstructed(transform.up);
+    //void Update()
+    //{
+    //    moveForward();
+    //    rotateLeft();
+    //    checkObstructed(transform.up);
 
-        if (Input.GetButtonDown("Fire1"))
-            shoot();
-    }
+    //    if (Input.GetButtonDown("Fire1"))
+    //        shoot();
+    //}
 
 }
