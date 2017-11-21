@@ -43,7 +43,6 @@ public class TankBehaviour : MonoBehaviour {
     public void rotateRight()
     {
         transform.Rotate(transform.forward, -rotationspeed);
-        print("rotating");
     }
     // Shoot command
     public void shoot()
@@ -58,25 +57,25 @@ public class TankBehaviour : MonoBehaviour {
     // Function for checking obstruction in an angle
     public bool checkObstructed(Vector2 direction)
     {
+        Sprite sprite = GetComponent<SpriteRenderer>().sprite;
+        Vector3 perpendicular = Vector3.Cross(new Vector3(0, 0, 1), new Vector3(direction.x, direction.y, 0));
+        Vector3.Normalize(perpendicular);
+        perpendicular *= 0.5f;
         RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, raylength, layerMask);
+        RaycastHit2D hit2 = Physics2D.Raycast(transform.position + perpendicular, direction, raylength, layerMask);
+        RaycastHit2D hit3 = Physics2D.Raycast(transform.position - perpendicular, direction, raylength, layerMask);
         // Check if the chosen direction is obstructed
-        if (hit)
+        if (hit || hit2 || hit3)
         {
-            Debug.DrawLine(transform.position, hit.point);
+            if (hit)
+                Debug.DrawLine(transform.position, hit.point);
+            if (hit2)
+                Debug.DrawLine(transform.position + perpendicular, hit2.point);
+            if (hit3)
+                Debug.DrawLine(transform.position - perpendicular, hit3.point);
             return true;
         }
         return false;
     }
-
-    // FOR TESTING PURPOSES
-    //void Update()
-    //{
-    //    moveForward();
-    //    rotateLeft();
-    //    checkObstructed(transform.up);
-
-    //    if (Input.GetButtonDown("Fire1"))
-    //        shoot();
-    //}
 
 }

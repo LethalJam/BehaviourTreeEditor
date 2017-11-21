@@ -15,9 +15,32 @@ public abstract class Node
     abstract public Response tick(ref TankBehaviour tank);
     public void addChild(Node node)
     {
+        node.parent = this;
         children.Add(node);
     }
+    public void removeChild(Node node)
+    {
+        children.Remove(node);
+    }
+    public int childAmount()
+    {
+        return children.Count;
+    }
+    public void destroy()
+    {
+        // Remove node from parents children.
+        if (parent != null)
+            parent.removeChild(this);
+
+        // "Destroy" all children
+        for (int i = 0; i < children.Count; i++)
+        {
+            children[i].destroy();
+        }
+        children.Clear();
+    }
     protected List<Node> children = new List<Node>();
+    protected Node parent = null;
 }
 
 // Selector node
@@ -70,6 +93,36 @@ public class checkForwardNode : Node
     public override Response tick(ref TankBehaviour tank)
     {
         if (tank.checkObstructed(tank.transform.up))
+            return Response.success;
+        else
+            return Response.failure;
+    }
+}
+public class checkBackwardsNode : Node
+{
+    public override Response tick(ref TankBehaviour tank)
+    {
+        if (tank.checkObstructed(-tank.transform.up))
+            return Response.success;
+        else
+            return Response.failure;
+    }
+}
+public class checkRightNode : Node
+{
+    public override Response tick(ref TankBehaviour tank)
+    {
+        if (tank.checkObstructed(tank.transform.right))
+            return Response.success;
+        else
+            return Response.failure;
+    }
+}
+public class checkLeftNode : Node
+{
+    public override Response tick(ref TankBehaviour tank)
+    {
+        if (tank.checkObstructed(-tank.transform.right))
             return Response.success;
         else
             return Response.failure;

@@ -2,13 +2,53 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class NodeManipulator : MonoBehaviour {
+public class NodeManipulator : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler {
 
     private Node node;
     private Button button;
     private GameObject canvas;
     private Dropdown nodeDropDown;
+    private BehaviourEditor editorInstance;
+    private bool indestructable = false;
+
+    // Moving variables
+    private bool isSelected = false;
+
+    public void setIndestructable(bool indestructable)
+    {
+        this.indestructable = indestructable;
+    }
+
+    public void OnPointerClick (PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Middle && !indestructable)
+        {
+            node.destroy();
+            Destroy(this.gameObject);
+        }
+    }
+
+    // Check right mousebutton on press and release
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Right)
+            isSelected = true;
+    }
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Right)
+            isSelected = false;
+    }
+
+    public void Update()
+    {
+        if (isSelected)
+        {
+            transform.position = Input.mousePosition;
+        }
+    }
 
     // Set initial values
     void Awake ()
@@ -16,12 +56,14 @@ public class NodeManipulator : MonoBehaviour {
         button = gameObject.GetComponent<Button>();
         button.onClick.AddListener(chooseNode);
 
+        editorInstance = GameObject.FindGameObjectWithTag("Editor").GetComponent<BehaviourEditor>();
+        if (editorInstance == null)
+            Debug.LogError("No editor gameobject was found!");
+
         // Find gameobject and save the dropdown object as well if there is one.
         canvas = GameObject.Find("Canvas");
         if (canvas == null)
             Debug.LogError("No canvas object found.");
-        else
-            print("Found canvas object.");
 
         nodeDropDown = canvas.GetComponentInChildren<Dropdown>(true);
         if (nodeDropDown == null)
@@ -32,11 +74,23 @@ public class NodeManipulator : MonoBehaviour {
     public void chooseNode()
     {
         // Check to see if the editorCanvas is active.
-        if (canvas != null)
+        if (canvas != null && editorInstance != null && nodeDropDown != null)
         {
             if (canvas.activeSelf)
             {
+                // Create new node object
                 Node newNode = getNodeType(nodeDropDown.value);
+                Vector3 offsetVector = new Vector3(0, -50, 0);
+                GameObject newNodeObject = editorInstance.createNewNode(newNode, gameObject.transform.position + offsetVector);
+
+                // Create line renderer to visually represent the tree structure.
+                UILineRenderer line = GameObject.Instantiate(Resources.Load("UILine", typeof(GameObject)) as GameObject).GetComponent<UILineRenderer>();
+                line.transform.SetParent(canvas.transform);
+                line.setAttachmentOffsets(new Vector3(-40 + 10*node.childAmount(), -10, 0), new Vector3(0, 10, 0));
+                line.pointA = transform;
+                line.pointB = newNodeObject.transform;
+
+                // Add the node as a child to the current node
                 addChild(newNode);
             }
         }
@@ -59,6 +113,14 @@ public class NodeManipulator : MonoBehaviour {
                 return new rotateLeftNode();
             case 5:
                 return new rotateRightNode();
+            case 6:
+                return new checkForwardNode();
+            case 7:
+                return new checkBackwardsNode();
+            case 8:
+                return new checkRightNode();
+            case 9:
+                return new checkLeftNode();
             default:
                 return null;
         }
@@ -71,6 +133,10 @@ public class NodeManipulator : MonoBehaviour {
 
     void addChild(Node node)
     {
-        node.addChild(node);
+        this.node.addChild(node);
+    }
+    void removeChild(Node node)
+    {
+
     }
 }
