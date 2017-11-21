@@ -3,6 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Save system related
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using UnityEngine.UI;
+
 
 public enum Response
 {
@@ -10,6 +15,7 @@ public enum Response
 }
 
 // Base class for a node
+[Serializable]
 public abstract class Node
 {
     abstract public Response tick(ref TankBehaviour tank);
@@ -44,6 +50,7 @@ public abstract class Node
 }
 
 // Selector node
+[Serializable]
 public class SelectorNode : Node
 {
     public override Response tick(ref TankBehaviour tank)
@@ -66,6 +73,7 @@ public class SelectorNode : Node
     }
 }
 // Sequence node
+[Serializable]
 public class SequenceNode : Node
 {
     public override Response tick(ref TankBehaviour tank)
@@ -88,6 +96,7 @@ public class SequenceNode : Node
     }
 }
 // Node for checking if there is anything in front of the tank
+[Serializable]
 public class checkForwardNode : Node
 {
     public override Response tick(ref TankBehaviour tank)
@@ -98,6 +107,7 @@ public class checkForwardNode : Node
             return Response.failure;
     }
 }
+[Serializable]
 public class checkBackwardsNode : Node
 {
     public override Response tick(ref TankBehaviour tank)
@@ -108,6 +118,7 @@ public class checkBackwardsNode : Node
             return Response.failure;
     }
 }
+[Serializable]
 public class checkRightNode : Node
 {
     public override Response tick(ref TankBehaviour tank)
@@ -118,6 +129,7 @@ public class checkRightNode : Node
             return Response.failure;
     }
 }
+[Serializable]
 public class checkLeftNode : Node
 {
     public override Response tick(ref TankBehaviour tank)
@@ -130,6 +142,7 @@ public class checkLeftNode : Node
 }
 
 // Tank movements
+[Serializable]
 public class moveForwardNode : Node
 {
     public override Response tick(ref TankBehaviour tank)
@@ -138,6 +151,7 @@ public class moveForwardNode : Node
         return Response.running;
     }
 }
+[Serializable]
 public class moveBackwardsNode : Node
 {
     public override Response tick(ref TankBehaviour tank)
@@ -146,6 +160,7 @@ public class moveBackwardsNode : Node
         return Response.running;
     }
 }
+[Serializable]
 public class rotateLeftNode : Node
 {
     public override Response tick(ref TankBehaviour tank)
@@ -154,6 +169,7 @@ public class rotateLeftNode : Node
         return Response.running;
     }
 }
+[Serializable]
 public class rotateRightNode : Node
 {
     public override Response tick(ref TankBehaviour tank)
@@ -163,7 +179,11 @@ public class rotateRightNode : Node
     }
 }
 
+
 public class BehaviourTree : MonoBehaviour {
+
+    public Button saveButton;
+    public Button loadButton;
 
     private TankBehaviour tank;
     private Node root = new SelectorNode();
@@ -176,7 +196,17 @@ public class BehaviourTree : MonoBehaviour {
         tank = gameObject.GetComponent<TankBehaviour>();
         if (tank == null)
             this.enabled = false;
-        //testConstructor();
+
+        // Set correct button functions
+        if (saveButton == null || loadButton == null)
+        {
+            Debug.LogError("Error: Save and/or load buttons not assigned to behaviourtree");
+        }
+        else
+        {
+            saveButton.onClick.AddListener(saveTree);
+            loadButton.onClick.AddListener(loadTree);
+        }
 	}
 	
     public Node getRoot()
@@ -189,18 +219,51 @@ public class BehaviourTree : MonoBehaviour {
         root.tick(ref tank);
 	}
 
-    // Simple behaviour for testing purposes
-    void testConstructor()
+    // Save function to serialize and save down treedata in file
+    public void saveTree()
     {
-        SequenceNode origin = new SequenceNode();
+        if (!File.Exists(Application.persistentDataPath + "/behaviourTreeData.dat"))
+        {
+            Debug.Log("No file exists, creating file.");
+            //BinaryFormatter bf = new BinaryFormatter();
+            FileStream newFile = File.Create(Application.persistentDataPath + "/behaviourTreeData.dat");
+            newFile.Close();
+        }
 
-        SelectorNode newSelect = new SelectorNode();
-        newSelect.addChild(new checkForwardNode());
-        newSelect.addChild(new moveForwardNode());
-        origin.addChild(newSelect);
+        Debug.Log("Saving file...");
+        // EXEMPELKOD LÅNGT FRÅN FÄRDIG
+        BinaryFormatter bf = new BinaryFormatter();
+        FileStream file = File.Open(Application.persistentDataPath + "/behaviourTreeData.dat", FileMode.Open);
 
-        origin.addChild(new rotateRightNode());
+        TreeData data = new TreeData();
+        data.rootNode = root;
 
-        root.addChild(origin);
+        bf.Serialize(file, data);
+        file.Close();
+        Debug.Log("File saved!");
     }
+    // Load function to deserialize and load data from file
+    public void loadTree()
+    {
+        if (File.Exists(Application.persistentDataPath + "/behaviourTreeData.dat"))
+        {
+            Debug.Log("Loading file...");
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream file = File.Open(Application.persistentDataPath + "/behaviourTreeData.dat", FileMode.Open);
+            TreeData data = (TreeData)bf.Deserialize(file);
+            root = data.rootNode;
+            file.Close();
+            Debug.Log("File loaded!");
+        }
+        else
+        {
+            Debug.Log("No savefile found.");
+        }
+    }
+}
+
+[Serializable]
+public class TreeData
+{
+    public Node rootNode;
 }
