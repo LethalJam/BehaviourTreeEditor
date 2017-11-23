@@ -14,11 +14,18 @@ public enum Response
     success, failure, running
 }
 
+[Serializable]
+public class SerializedVector3
+{
+    public float x, y, z;
+}
+
 // Base class for a node
 [Serializable]
 public abstract class Node
 {
     abstract public Response tick(ref TankBehaviour tank);
+
     public void addChild(Node node)
     {
         node.parent = this;
@@ -45,9 +52,40 @@ public abstract class Node
         }
         children.Clear();
     }
-    protected List<Node> children = new List<Node>();
+    public bool isEndnode()
+    {
+        return endNode;
+    }
+    public void setVisualPos(Vector3 pos)
+    {
+        serializedPos.x = pos.x;
+        serializedPos.y = pos.y;
+        serializedPos.z = pos.z;
+    }
+    public Vector3 getVisualPos()
+    {
+        Vector3 returnVec = new Vector3(serializedPos.x, serializedPos.y, serializedPos.z);
+        return returnVec;
+    }
+    public bool hasParent()
+    {
+        return (parent != null);
+    }
+    public List<Node> children = new List<Node>();
     protected Node parent = null;
+    protected bool endNode = false;
+    // Vector used for serializing the position of the nodes button when saving and loading
+    protected SerializedVector3 serializedPos = new SerializedVector3();
 }
+[Serializable]
+public abstract class EndNode : Node
+{
+    protected EndNode()
+    {
+        endNode = true;
+    }
+}
+
 
 // Selector node
 [Serializable]
@@ -97,7 +135,7 @@ public class SequenceNode : Node
 }
 // Node for checking if there is anything in front of the tank
 [Serializable]
-public class checkForwardNode : Node
+public class checkForwardNode : EndNode
 {
     public override Response tick(ref TankBehaviour tank)
     {
@@ -108,7 +146,7 @@ public class checkForwardNode : Node
     }
 }
 [Serializable]
-public class checkBackwardsNode : Node
+public class checkBackwardsNode : EndNode
 {
     public override Response tick(ref TankBehaviour tank)
     {
@@ -119,7 +157,7 @@ public class checkBackwardsNode : Node
     }
 }
 [Serializable]
-public class checkRightNode : Node
+public class checkRightNode : EndNode
 {
     public override Response tick(ref TankBehaviour tank)
     {
@@ -130,7 +168,7 @@ public class checkRightNode : Node
     }
 }
 [Serializable]
-public class checkLeftNode : Node
+public class checkLeftNode : EndNode
 {
     public override Response tick(ref TankBehaviour tank)
     {
@@ -143,7 +181,7 @@ public class checkLeftNode : Node
 
 // Tank movements
 [Serializable]
-public class moveForwardNode : Node
+public class moveForwardNode : EndNode
 {
     public override Response tick(ref TankBehaviour tank)
     {
@@ -152,7 +190,7 @@ public class moveForwardNode : Node
     }
 }
 [Serializable]
-public class moveBackwardsNode : Node
+public class moveBackwardsNode : EndNode
 {
     public override Response tick(ref TankBehaviour tank)
     {
@@ -161,7 +199,7 @@ public class moveBackwardsNode : Node
     }
 }
 [Serializable]
-public class rotateLeftNode : Node
+public class rotateLeftNode : EndNode
 {
     public override Response tick(ref TankBehaviour tank)
     {
@@ -170,7 +208,7 @@ public class rotateLeftNode : Node
     }
 }
 [Serializable]
-public class rotateRightNode : Node
+public class rotateRightNode : EndNode
 {
     public override Response tick(ref TankBehaviour tank)
     {
@@ -189,7 +227,8 @@ public class BehaviourTree : MonoBehaviour {
     private Node root = new SelectorNode();
 
 	// Initialize relevant variables for tree.
-	void Awake () {
+	void Awake ()
+    {
 
         // Attempt to get the tank behaviour script of the gameobject
         // If no such script exists, disable the component
@@ -225,13 +264,11 @@ public class BehaviourTree : MonoBehaviour {
         if (!File.Exists(Application.persistentDataPath + "/behaviourTreeData.dat"))
         {
             Debug.Log("No file exists, creating file.");
-            //BinaryFormatter bf = new BinaryFormatter();
             FileStream newFile = File.Create(Application.persistentDataPath + "/behaviourTreeData.dat");
             newFile.Close();
         }
 
         Debug.Log("Saving file...");
-        // EXEMPELKOD LÅNGT FRÅN FÄRDIG
         BinaryFormatter bf = new BinaryFormatter();
         FileStream file = File.Open(Application.persistentDataPath + "/behaviourTreeData.dat", FileMode.Open);
 
@@ -247,12 +284,18 @@ public class BehaviourTree : MonoBehaviour {
     {
         if (File.Exists(Application.persistentDataPath + "/behaviourTreeData.dat"))
         {
+            BehaviourEditor editor = GameObject.FindGameObjectWithTag("Editor").GetComponent<BehaviourEditor>();
             Debug.Log("Loading file...");
+
+            
+            editor.deleteTreeButtons();
             BinaryFormatter bf = new BinaryFormatter();
             FileStream file = File.Open(Application.persistentDataPath + "/behaviourTreeData.dat", FileMode.Open);
             TreeData data = (TreeData)bf.Deserialize(file);
             root = data.rootNode;
+            editor.reconstructInterface(root);
             file.Close();
+
             Debug.Log("File loaded!");
         }
         else

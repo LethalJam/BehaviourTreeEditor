@@ -39,7 +39,11 @@ public class NodeManipulator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     public void OnPointerUp(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
+        {
             isSelected = false;
+            node.setVisualPos(transform.position);
+        }
+
     }
 
     public void Update()
@@ -74,7 +78,7 @@ public class NodeManipulator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     public void chooseNode()
     {
         // Check to see if the editorCanvas is active.
-        if (canvas != null && editorInstance != null && nodeDropDown != null)
+        if (canvas != null && editorInstance != null && nodeDropDown != null && !node.isEndnode())
         {
             if (canvas.activeSelf)
             {
