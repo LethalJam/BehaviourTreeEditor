@@ -72,6 +72,7 @@ public abstract class Node
         return (parent != null);
     }
     public List<Node> children = new List<Node>();
+    public string tipText = "Root";
     protected Node parent = null;
     protected bool endNode = false;
     // Vector used for serializing the position of the nodes button when saving and loading
@@ -91,6 +92,10 @@ public abstract class EndNode : Node
 [Serializable]
 public class SelectorNode : Node
 {
+    public SelectorNode()
+    {
+        tipText = "Selector node executes its children from left to right. When a child returns success or running, it stops.";
+    }
     public override Response tick(ref TankBehaviour tank)
     {
         // Iterate through all children to try and find one that succeeds or is running
@@ -109,11 +114,16 @@ public class SelectorNode : Node
         // If no such child was found, return failure.
         return Response.failure;
     }
+    
 }
 // Sequence node
 [Serializable]
 public class SequenceNode : Node
 {
+    public SequenceNode()
+    {
+        tipText = "Sequence node executes its children from left to right. When a child returns failure or running, it stops.";
+    }
     public override Response tick(ref TankBehaviour tank)
     {
         // Iterate through all children to try and find one that succeeds or is running
@@ -137,6 +147,10 @@ public class SequenceNode : Node
 [Serializable]
 public class checkForwardNode : EndNode
 {
+    public checkForwardNode()
+    {
+        tipText = "This node checks if the tank is obsctructed in the front. If so, return success. If not, return failure.";
+    }
     public override Response tick(ref TankBehaviour tank)
     {
         if (tank.checkObstructed(tank.transform.up))
@@ -148,6 +162,10 @@ public class checkForwardNode : EndNode
 [Serializable]
 public class checkBackwardsNode : EndNode
 {
+    public checkBackwardsNode()
+    {
+        tipText = "This node checks if the tank is obsctructed in the back. If so, return success. If not, return failure.";
+    }
     public override Response tick(ref TankBehaviour tank)
     {
         if (tank.checkObstructed(-tank.transform.up))
@@ -159,6 +177,10 @@ public class checkBackwardsNode : EndNode
 [Serializable]
 public class checkRightNode : EndNode
 {
+    public checkRightNode()
+    {
+        tipText = "This node checks if the tank is obsctructed to the right. If so, return success. If not, return failure.";
+    }
     public override Response tick(ref TankBehaviour tank)
     {
         if (tank.checkObstructed(tank.transform.right))
@@ -170,6 +192,10 @@ public class checkRightNode : EndNode
 [Serializable]
 public class checkLeftNode : EndNode
 {
+    public checkLeftNode()
+    {
+        tipText = "This node checks if the tank is obsctructed to the left. If so, return success. If not, return failure.";
+    }
     public override Response tick(ref TankBehaviour tank)
     {
         if (tank.checkObstructed(-tank.transform.right))
@@ -183,37 +209,53 @@ public class checkLeftNode : EndNode
 [Serializable]
 public class moveForwardNode : EndNode
 {
+    public moveForwardNode()
+    {
+        tipText = "Moves the tank forward. Always returns success.";
+    }
     public override Response tick(ref TankBehaviour tank)
     {
         tank.moveForward();
-        return Response.running;
+        return Response.success;
     }
 }
 [Serializable]
 public class moveBackwardsNode : EndNode
 {
+    public moveBackwardsNode()
+    {
+        tipText = "Moves the tank backwards. Always returns success.";
+    }
     public override Response tick(ref TankBehaviour tank)
     {
         tank.moveBackwards();
-        return Response.running;
+        return Response.success;
     }
 }
 [Serializable]
 public class rotateLeftNode : EndNode
 {
+    public rotateLeftNode()
+    {
+        tipText = "Rotates the tank to the left. Always returns success.";
+    }
     public override Response tick(ref TankBehaviour tank)
     {
         tank.rotateLeft();
-        return Response.running;
+        return Response.success;
     }
 }
 [Serializable]
 public class rotateRightNode : EndNode
 {
+    public rotateRightNode()
+    {
+        tipText = "Rotates the tank to the right. Always returns success.";
+    }
     public override Response tick(ref TankBehaviour tank)
     {
         tank.rotateRight();
-        return Response.running;
+        return Response.success;
     }
 }
 
@@ -221,6 +263,10 @@ public class rotateRightNode : EndNode
 [Serializable]
 public class shootNode : EndNode
 {
+    public shootNode()
+    {
+        tipText = "Makes the tank shoot. Always returns success.";
+    }
     public override Response tick(ref TankBehaviour tank)
     {
         tank.shoot();

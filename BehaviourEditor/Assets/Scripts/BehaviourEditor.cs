@@ -8,12 +8,12 @@ public class BehaviourEditor : MonoBehaviour {
     // Public variables to be assigned in Unity editor.
     public BehaviourTree tree;
     public GameObject nodeButton;
-    public Canvas editorCanvas;
 
     private Node targetNode;
     private Vector3 rootPosition;
     private List<GameObject> nodeButtons;
     private GameObject canvas;
+    private GameObject buttons;
     private object newNodeObject;
 
     // Use this for initialization
@@ -23,6 +23,10 @@ public class BehaviourEditor : MonoBehaviour {
         canvas = GameObject.Find("Canvas");
         if (canvas == null)
             Debug.LogError("No canvas object found.");
+        buttons = GameObject.FindGameObjectWithTag("Buttons");
+        if (buttons == null)
+            Debug.LogError("No buttons gameobject found.");
+
 
         nodeButtons = new List<GameObject>();
         rootPosition = new Vector3(Screen.width / 2, Screen.height / 2 + Screen.height / 4, 0);
@@ -32,11 +36,12 @@ public class BehaviourEditor : MonoBehaviour {
         }
         // Create initial node button from the root of the tree.
         GameObject nodeObj = GameObject.Instantiate(nodeButton);
-        nodeObj.transform.SetParent(editorCanvas.transform);
+        nodeObj.transform.SetParent(buttons.transform);
         nodeObj.transform.SetPositionAndRotation(rootPosition, nodeObj.transform.rotation);
         nodeObj.GetComponent<NodeManipulator>().setNode(tree.getRoot());
         nodeObj.GetComponent<NodeManipulator>().setIndestructable(true);
-        nodeObj.transform.GetChild(0).GetComponent<Text>().text = "Root";
+        nodeObj.transform.GetChild(0).GetComponent<Text>().text = "RootSelecter";
+        nodeObj.GetComponent<NodeManipulator>().setTipText(tree.getRoot().tipText);
         tree.getRoot().setVisualPos(nodeObj.transform.position);
         nodeButtons.Add(nodeObj);
     }
@@ -55,9 +60,10 @@ public class BehaviourEditor : MonoBehaviour {
     public GameObject createNewNode(Node node, Vector2 position)
     {
         GameObject nodeObj = GameObject.Instantiate(nodeButton);
-        nodeObj.transform.SetParent(editorCanvas.transform);
+        nodeObj.transform.SetParent(buttons.transform);
         nodeObj.transform.SetPositionAndRotation(new Vector3(position.x, position.y, 0), nodeObj.transform.rotation);
         nodeObj.GetComponent<NodeManipulator>().setNode(node);
+        nodeObj.GetComponent<NodeManipulator>().setTipText(node.tipText);
         nodeObj.transform.GetChild(0).GetComponent<Text>().text = node.GetType().Name;
         node.setVisualPos(nodeObj.transform.position);
         nodeButtons.Add(nodeObj);
