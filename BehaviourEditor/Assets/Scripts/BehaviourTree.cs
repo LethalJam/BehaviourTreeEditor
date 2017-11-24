@@ -217,6 +217,16 @@ public class rotateRightNode : EndNode
     }
 }
 
+// Other Tank actions
+[Serializable]
+public class shootNode : EndNode
+{
+    public override Response tick(ref TankBehaviour tank)
+    {
+        tank.shoot();
+        return Response.success;
+    }
+}
 
 public class BehaviourTree : MonoBehaviour {
 
@@ -226,10 +236,14 @@ public class BehaviourTree : MonoBehaviour {
     private TankBehaviour tank;
     private Node root = new SelectorNode();
 
+    string directoryPath;
+    string savingPath;
+
 	// Initialize relevant variables for tree.
 	void Awake ()
     {
-
+        directoryPath = "./SavedTrees";
+        savingPath = directoryPath + "/behaviourData.tree";
         // Attempt to get the tank behaviour script of the gameobject
         // If no such script exists, disable the component
         tank = gameObject.GetComponent<TankBehaviour>();
@@ -261,16 +275,17 @@ public class BehaviourTree : MonoBehaviour {
     // Save function to serialize and save down treedata in file
     public void saveTree()
     {
-        if (!File.Exists(Application.persistentDataPath + "/behaviourTreeData.dat"))
+        if (!File.Exists(savingPath))
         {
             Debug.Log("No file exists, creating file.");
-            FileStream newFile = File.Create(Application.persistentDataPath + "/behaviourTreeData.dat");
+            Directory.CreateDirectory(directoryPath);
+            FileStream newFile = File.Create(savingPath);
             newFile.Close();
         }
 
         Debug.Log("Saving file...");
         BinaryFormatter bf = new BinaryFormatter();
-        FileStream file = File.Open(Application.persistentDataPath + "/behaviourTreeData.dat", FileMode.Open);
+        FileStream file = File.Open(savingPath, FileMode.Open);
 
         TreeData data = new TreeData();
         data.rootNode = root;
@@ -282,7 +297,7 @@ public class BehaviourTree : MonoBehaviour {
     // Load function to deserialize and load data from file
     public void loadTree()
     {
-        if (File.Exists(Application.persistentDataPath + "/behaviourTreeData.dat"))
+        if (File.Exists(savingPath))
         {
             BehaviourEditor editor = GameObject.FindGameObjectWithTag("Editor").GetComponent<BehaviourEditor>();
             Debug.Log("Loading file...");
@@ -290,7 +305,7 @@ public class BehaviourTree : MonoBehaviour {
             
             editor.deleteTreeButtons();
             BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Open(Application.persistentDataPath + "/behaviourTreeData.dat", FileMode.Open);
+            FileStream file = File.Open(savingPath, FileMode.Open);
             TreeData data = (TreeData)bf.Deserialize(file);
             root = data.rootNode;
             editor.reconstructInterface(root);

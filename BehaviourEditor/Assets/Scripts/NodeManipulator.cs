@@ -125,6 +125,8 @@ public class NodeManipulator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
                 return new checkRightNode();
             case 9:
                 return new checkLeftNode();
+            case 10:
+                return new shootNode();
             default:
                 return null;
         }
