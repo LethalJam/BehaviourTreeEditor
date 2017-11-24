@@ -16,4 +16,13 @@ public class DestructionTimer : MonoBehaviour {
             Destroy(gameObject);
         }
 	}
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        print("triggering!");
+        if (other.tag == "Wall")
+            Destroy(gameObject);
+    }
 }
+
+

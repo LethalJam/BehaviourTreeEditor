@@ -19,6 +19,10 @@ public class TankBehaviour : MonoBehaviour {
     // Privates
     private Rigidbody2D body;
 
+    // Timer related
+    private float shootingCooldown = 0.5f;
+    private float timer = 0.0f;
+
 	// Use this for initialization
 	void Awake ()
     {
@@ -47,11 +51,17 @@ public class TankBehaviour : MonoBehaviour {
     // Shoot command
     public void shoot()
     {
-        // Instantiate new bullet
-       GameObject newBullet = GameObject.Instantiate(bullet);
-       Rigidbody2D newBody = newBullet.GetComponent<Rigidbody2D>();
-        newBullet.transform.position = transform.position;
-        newBody.velocity = transform.up * projectileSpeed;
+        timer += Time.deltaTime;
+        if (timer >= shootingCooldown)
+        {
+            // Instantiate new bullet
+            GameObject newBullet = GameObject.Instantiate(bullet);
+            Rigidbody2D newBody = newBullet.GetComponent<Rigidbody2D>();
+            newBullet.transform.position = transform.position;
+            newBody.velocity = transform.up * projectileSpeed;
+            // Reset timer
+            timer = 0.0f;
+        }
     }
 
     // Function for checking obstruction in an angle
