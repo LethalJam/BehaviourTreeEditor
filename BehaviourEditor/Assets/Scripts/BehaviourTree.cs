@@ -274,6 +274,21 @@ public class shootNode : EndNode
     }
 }
 
+public class enemyInSightNode : EndNode
+{
+    public enemyInSightNode()
+    {
+        tipText = "Return success if an enemy is found. Return failure otherwise.";
+    }
+    public override Response tick(ref TankBehaviour tank)
+    {
+        if (tank.foundEnemy())
+            return Response.success;
+        else
+            return Response.failure;
+    }
+}
+
 public class BehaviourTree : MonoBehaviour {
 
     public Button saveButton;

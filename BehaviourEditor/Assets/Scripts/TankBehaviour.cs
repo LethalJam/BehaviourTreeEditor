@@ -18,6 +18,7 @@ public class TankBehaviour : MonoBehaviour {
 
     // Privates
     private Rigidbody2D body;
+    private SightCollider sight;
 
     // Timer related
     private float shootingCooldown = 0.5f;
@@ -27,6 +28,7 @@ public class TankBehaviour : MonoBehaviour {
 	void Awake ()
     {
         body = GetComponent<Rigidbody2D>();
+        sight = transform.GetChild(0).GetComponent<SightCollider>();
 	}
 
     // Movement commands
@@ -86,6 +88,11 @@ public class TankBehaviour : MonoBehaviour {
             return true;
         }
         return false;
+    }
+
+    public bool foundEnemy()
+    {
+        return sight.enemyInSight();
     }
 
 }
