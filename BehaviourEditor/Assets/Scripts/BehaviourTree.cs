@@ -273,7 +273,7 @@ public class shootNode : EndNode
         return Response.success;
     }
 }
-
+[Serializable]
 public class enemyInSightNode : EndNode
 {
     public enemyInSightNode()
@@ -286,6 +286,49 @@ public class enemyInSightNode : EndNode
             return Response.success;
         else
             return Response.failure;
+    }
+}
+[Serializable]
+public class randomSelector : Node
+{
+    public randomSelector()
+    {
+        tipText = "Randomly selects one child and executes it. Additional executions executes the same randomised node.";
+    }
+
+    public override Response tick(ref TankBehaviour tank)
+    {
+        // Randomise new number if not already randomised.
+        if (!randomised && children.Count > 0)
+        {
+            Debug.Log("Randomising node...");
+            System.Random random = new System.Random();
+            randomIndex = random.Next(0, children.Count);
+            randomised = true;
+            return children[randomIndex].tick(ref tank);
+        }
+        else // Else, just execute the previously randomised node.
+        {
+            Debug.Log("Return already randomised node.");
+            return children[randomIndex].tick(ref tank);
+        }
+    }
+
+    // Privates
+    private int randomIndex = 0;
+    private bool randomised = false;
+}
+[Serializable]
+public class resetRandomNode : EndNode
+{
+    public resetRandomNode()
+    {
+        tipText = "Resets the randomization of a chosen node.";
+    }
+
+    public override Response tick(ref TankBehaviour tank)
+    {
+        throw new NotImplementedException();
     }
 }
 

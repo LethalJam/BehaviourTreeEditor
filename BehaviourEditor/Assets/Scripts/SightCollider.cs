@@ -63,10 +63,4 @@ public class SightCollider : MonoBehaviour {
             mat.color = originalColor;
 
     }
-
-    // FOR TESTING PURPOSES
-    void Update()
-    {
-        print("Found enemy: " + foundEnemy);
-    }
 }
