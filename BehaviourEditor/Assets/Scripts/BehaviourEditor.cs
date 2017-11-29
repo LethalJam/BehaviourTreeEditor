@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,10 @@ public class BehaviourEditor : MonoBehaviour {
     private GameObject canvas;
     private GameObject buttons;
     private object newNodeObject;
+    private bool isPaused = false;
+
+    // Event related
+    public static event EventHandler PauseEvent;
 
     // Use this for initialization
     void Awake()
@@ -91,5 +96,21 @@ public class BehaviourEditor : MonoBehaviour {
             line.pointB = reconstructInterface(nodeChildren[i]).transform;
         }
         return nodeObj;
+    }
+
+    void Update()
+    {
+        // Toggle pause when pressing the appropiate button.
+        if (Input.GetButtonDown("Pause"))
+        {
+            //OnPauseEvent(new EventArgs());
+            PauseEvent.Invoke(this, new EventArgs());
+            if (!isPaused)
+                Time.timeScale = 0.0f;
+            else
+                Time.timeScale = 1.0f;
+
+            isPaused = !isPaused;
+        }
     }
 }

@@ -343,9 +343,18 @@ public class BehaviourTree : MonoBehaviour {
     string directoryPath;
     string savingPath;
 
-	// Initialize relevant variables for tree.
-	void Awake ()
+    private bool isPaused = false;
+
+    void pausedEvent(object sender, EventArgs args)
     {
+        isPaused = !isPaused;
+        Debug.Log("Pause event recieved."); 
+    }
+
+    // Initialize relevant variables for tree.
+    void Awake ()
+    {
+        BehaviourEditor.PauseEvent += pausedEvent;
         directoryPath = "./SavedTrees";
         savingPath = directoryPath + "/behaviourData.tree";
         // Attempt to get the tank behaviour script of the gameobject
@@ -373,7 +382,8 @@ public class BehaviourTree : MonoBehaviour {
 
 	// Update each frame by sending a signal through the root-node.
 	void Update () {
-        root.tick(ref tank);
+        if (!isPaused)
+            root.tick(ref tank);
 	}
 
     // Save function to serialize and save down treedata in file
