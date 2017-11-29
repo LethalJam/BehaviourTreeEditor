@@ -15,10 +15,14 @@ public class UILineRenderer : MonoBehaviour {
     private RectTransform rectTransform;
     private Vector3 pointAOffset;
     private Vector3 pointBOffset;
+    private GameObject buttonParent;
 
     void Awake()
     {
         rectTransform = GetComponent<Image>().rectTransform;
+        buttonParent = GameObject.FindGameObjectWithTag("Buttons");
+        if (buttonParent == null)
+            Debug.LogError("No buttonParent object found.");
     }
 
     public void setAttachmentOffsets(Vector3 offset, Vector3 offset2)
@@ -30,6 +34,17 @@ public class UILineRenderer : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
+        // Move the children buttons of the connected node
+        //if (pointA.gameObject.GetComponent<NodeManipulator>().isSelected)
+        //{
+        //    pointB.transform.SetParent(pointA);
+        //}
+        //else if (pointB.transform.parent != buttonParent
+        //    && !pointA.gameObject.GetComponent<NodeManipulator>().isSelected)
+        //{
+        //    pointB.transform.SetParent(buttonParent.transform);
+        //}
+
         // If any point is removed, delete the line and the detached gameobjects
         if (pointA == null || pointB == null)
         {

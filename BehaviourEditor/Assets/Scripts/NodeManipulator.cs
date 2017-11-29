@@ -17,7 +17,7 @@ public class NodeManipulator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
     // Moving variables
     private string tipString;
-    private bool isSelected = false;
+    public bool isSelected = false;
     private bool mouseHovering = false;
     private Vector3 tooltipHidePos = new Vector3(10000, 0, 0);
 
