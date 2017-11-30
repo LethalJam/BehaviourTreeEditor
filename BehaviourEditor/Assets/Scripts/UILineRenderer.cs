@@ -34,17 +34,6 @@ public class UILineRenderer : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        // Move the children buttons of the connected node
-        //if (pointA.gameObject.GetComponent<NodeManipulator>().isSelected)
-        //{
-        //    pointB.transform.SetParent(pointA);
-        //}
-        //else if (pointB.transform.parent != buttonParent
-        //    && !pointA.gameObject.GetComponent<NodeManipulator>().isSelected)
-        //{
-        //    pointB.transform.SetParent(buttonParent.transform);
-        //}
-
         // If any point is removed, delete the line and the detached gameobjects
         if (pointA == null || pointB == null)
         {
@@ -62,5 +51,16 @@ public class UILineRenderer : MonoBehaviour {
             float angle = Mathf.Atan2(deltaVec.y, deltaVec.x) * Mathf.Rad2Deg;
             rectTransform.rotation = Quaternion.Euler(0, 0, angle);
         }
-	}
+
+        //Move the children buttons of the connected node
+        if (pointA.gameObject.GetComponent<NodeManipulator>().isSelected)
+        {
+            pointB.transform.SetParent(pointA);
+        }
+        else if (pointB.transform.parent != buttonParent
+            && !pointA.gameObject.GetComponent<NodeManipulator>().isSelected)
+        {
+            pointB.transform.SetParent(buttonParent.transform);
+        }
+    }
 }
