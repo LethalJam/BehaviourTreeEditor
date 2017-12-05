@@ -52,15 +52,16 @@ public class UILineRenderer : MonoBehaviour {
             rectTransform.rotation = Quaternion.Euler(0, 0, angle);
         }
 
+        // FIX MAYBE
         //Move the children buttons of the connected node
-        if (pointA.gameObject.GetComponent<NodeManipulator>().isSelected)
-        {
-            pointB.transform.SetParent(pointA);
-        }
-        else if (pointB.transform.parent != buttonParent
-            && !pointA.gameObject.GetComponent<NodeManipulator>().isSelected)
-        {
-            pointB.transform.SetParent(buttonParent.transform);
-        }
+        //if (pointA.gameObject.GetComponent<NodeManipulator>().isSelected)
+        //{
+        //    pointB.transform.SetParent(pointA);
+        //}
+        //else if (pointB.transform.parent != buttonParent
+        //    && !pointA.gameObject.GetComponent<NodeManipulator>().isSelected)
+        //{
+        //    pointB.transform.SetParent(buttonParent.transform);
+        //}
     }
 }

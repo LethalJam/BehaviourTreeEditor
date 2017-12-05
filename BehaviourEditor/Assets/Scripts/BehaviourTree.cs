@@ -293,7 +293,14 @@ public class randomSelector : Node
 {
     public randomSelector()
     {
-        tipText = "Randomly selects one child and executes it. Additional executions executes the same randomised node.";
+        tipText = "Randomly selects one branch to execute until randomization is reset. No children=failure";
+        randomSelector me = this;
+        NodeEventHandler.getInstance().addToResetList(ref me);
+    }
+
+    public void reset()
+    {
+        randomised = false;
     }
 
     public override Response tick(ref TankBehaviour tank)
@@ -301,34 +308,73 @@ public class randomSelector : Node
         // Randomise new number if not already randomised.
         if (!randomised && children.Count > 0)
         {
-            Debug.Log("Randomising node...");
             System.Random random = new System.Random();
             randomIndex = random.Next(0, children.Count);
             randomised = true;
             return children[randomIndex].tick(ref tank);
         }
-        else // Else, just execute the previously randomised node.
+        else if (children.Count > 0)// Else, just execute the previously randomised node.
         {
-            Debug.Log("Return already randomised node.");
             return children[randomIndex].tick(ref tank);
         }
+        else
+            return Response.failure;
     }
 
     // Privates
     private int randomIndex = 0;
     private bool randomised = false;
 }
+
+public class NodeEventHandler
+{
+    private static NodeEventHandler instance;
+    private List<randomSelector> rNodeList = new List<randomSelector>();
+
+    public static NodeEventHandler getInstance()
+    {
+        if (instance == null)
+        {
+            Debug.Log("Creating initial NodeEventHandler instance");
+            instance = new NodeEventHandler();
+        }
+        return instance;
+    }
+
+    // Private constructor
+    private NodeEventHandler() { }
+
+    public void resetRandomNodes()
+    {
+        Debug.Log("Reseting randomNodes: " + rNodeList.Count);
+        foreach (randomSelector n in rNodeList)
+        {
+            n.reset();
+        }
+    }
+    public void addToResetList(ref randomSelector node)
+    {
+        Debug.Log("Adding " + node + " to reset list.");
+        rNodeList.Add(node);
+    }
+    public void clear()
+    {
+        rNodeList.Clear();
+    }
+}
+
 [Serializable]
 public class resetRandomNode : EndNode
 {
     public resetRandomNode()
     {
-        tipText = "Resets the randomization of a chosen node.";
+        tipText = "Resets the randomization of nodes.";
     }
 
     public override Response tick(ref TankBehaviour tank)
     {
-        throw new NotImplementedException();
+        NodeEventHandler.getInstance().resetRandomNodes();
+        return Response.success;
     }
 }
 
@@ -415,7 +461,8 @@ public class BehaviourTree : MonoBehaviour {
         {
             BehaviourEditor editor = GameObject.FindGameObjectWithTag("Editor").GetComponent<BehaviourEditor>();
             Debug.Log("Loading file...");
-
+            // Clear lists of nodes before loading new ones.
+            NodeEventHandler.getInstance().clear();
             
             editor.deleteTreeButtons();
             BinaryFormatter bf = new BinaryFormatter();

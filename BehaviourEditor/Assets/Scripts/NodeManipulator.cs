@@ -168,6 +168,8 @@ public class NodeManipulator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
                 return new enemyInSightNode();
             case 12:
                 return new randomSelector();
+            case 13:
+                return new resetRandomNode();
             default:
                 return null;
         }
