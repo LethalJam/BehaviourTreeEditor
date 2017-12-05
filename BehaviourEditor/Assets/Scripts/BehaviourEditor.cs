@@ -77,7 +77,6 @@ public class BehaviourEditor : MonoBehaviour {
 
     public GameObject reconstructInterface(Node rootNode)
     {
-        
         GameObject nodeObj = createNewNode(rootNode, rootNode.getVisualPos());
         if (!rootNode.hasParent())
         {

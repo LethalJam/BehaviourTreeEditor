@@ -39,6 +39,11 @@ public abstract class Node
     {
         return children.Count;
     }
+    public virtual void awakeOnLoad()
+    {
+        foreach (Node n in children)
+            n.awakeOnLoad();
+    }
     public void destroy()
     {
         // Remove node from parents children.
@@ -291,16 +296,35 @@ public class enemyInSightNode : EndNode
 [Serializable]
 public class randomSelector : Node
 {
+    void Start()
+    {
+        Debug.Log("Random node awakening!!");
+    }
+
+
     public randomSelector()
     {
         tipText = "Randomly selects one branch to execute until randomization is reset. No children=failure";
-        randomSelector me = this;
-        NodeEventHandler.getInstance().addToResetList(ref me);
+        NodeEventHandler.getInstance().subscribe(this);
+    }
+    ~randomSelector()
+    {
+        NodeEventHandler.getInstance().unsubscribe(this);
     }
 
-    public void reset()
+    public void onResetEvent(object sender, EventArgs args)
     {
+        Debug.Log("Reset randomSelector on event.");
         randomised = false;
+    }
+
+    public override void awakeOnLoad()
+    {
+        // In addition to awakening children, subscribe to events
+        NodeEventHandler.getInstance().subscribe(this);
+
+        foreach (Node n in children)
+            n.awakeOnLoad();
     }
 
     public override Response tick(ref TankBehaviour tank)
@@ -317,7 +341,7 @@ public class randomSelector : Node
         {
             return children[randomIndex].tick(ref tank);
         }
-        else
+        else // Or no node at all and return failure.
             return Response.failure;
     }
 
@@ -329,7 +353,7 @@ public class randomSelector : Node
 public class NodeEventHandler
 {
     private static NodeEventHandler instance;
-    private List<randomSelector> rNodeList = new List<randomSelector>();
+    public static EventHandler resetRandomEvent;
 
     public static NodeEventHandler getInstance()
     {
@@ -346,20 +370,16 @@ public class NodeEventHandler
 
     public void resetRandomNodes()
     {
-        Debug.Log("Reseting randomNodes: " + rNodeList.Count);
-        foreach (randomSelector n in rNodeList)
-        {
-            n.reset();
-        }
+        if (resetRandomEvent != null)
+            resetRandomEvent.Invoke(this, new EventArgs());
     }
-    public void addToResetList(ref randomSelector node)
+    public void subscribe(randomSelector node)
     {
-        Debug.Log("Adding " + node + " to reset list.");
-        rNodeList.Add(node);
+        resetRandomEvent += node.onResetEvent;
     }
-    public void clear()
+    public void unsubscribe(randomSelector node)
     {
-        rNodeList.Clear();
+        resetRandomEvent -= node.onResetEvent;
     }
 }
 
@@ -461,14 +481,13 @@ public class BehaviourTree : MonoBehaviour {
         {
             BehaviourEditor editor = GameObject.FindGameObjectWithTag("Editor").GetComponent<BehaviourEditor>();
             Debug.Log("Loading file...");
-            // Clear lists of nodes before loading new ones.
-            NodeEventHandler.getInstance().clear();
             
             editor.deleteTreeButtons();
             BinaryFormatter bf = new BinaryFormatter();
             FileStream file = File.Open(savingPath, FileMode.Open);
             TreeData data = (TreeData)bf.Deserialize(file);
             root = data.rootNode;
+            root.awakeOnLoad();
             editor.reconstructInterface(root);
             file.Close();
 
