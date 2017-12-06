@@ -144,7 +144,7 @@ public class SequenceNode : Node
             }
         }
 
-        // If no such child was found, return failure.
+        // If no such child was found, return success.
         return Response.success;
     }
 }
@@ -349,7 +349,6 @@ public class randomSelector : Node
     private int randomIndex = 0;
     private bool randomised = false;
 }
-
 public class NodeEventHandler
 {
     private static NodeEventHandler instance;
@@ -382,7 +381,6 @@ public class NodeEventHandler
         resetRandomEvent -= node.onResetEvent;
     }
 }
-
 [Serializable]
 public class resetRandomNode : EndNode
 {
@@ -395,6 +393,45 @@ public class resetRandomNode : EndNode
     {
         NodeEventHandler.getInstance().resetRandomNodes();
         return Response.success;
+    }
+}
+[Serializable]
+public class timerSequence : Node
+{
+    private float timeOut = 10.0f;
+    private float time0, time1 = 0.0f;
+
+    public override Response tick(ref TankBehaviour tank)
+    {
+        time1 = Time.time;
+        float timeDelta = Mathf.Abs(time1 - time0);
+        if (timeDelta >= timeOut)
+        {
+            // Reset time
+            time0 = time1 = Time.time;
+
+            Debug.Log("Firing!");
+            // REGULAR SEQUENCE IF TIMEOUT
+            // Iterate through all children to try and find one that fails or is running
+            foreach (Node n in children)
+            {
+                Response childResponse;
+                childResponse = n.tick(ref tank);
+
+                if (childResponse == Response.running
+                    || childResponse == Response.failure)
+                {
+                    return childResponse;
+                }
+            }
+
+            // If no such child was found, return success.
+            return Response.success;
+        }
+        else
+        {
+            return Response.failure;
+        }
     }
 }
 

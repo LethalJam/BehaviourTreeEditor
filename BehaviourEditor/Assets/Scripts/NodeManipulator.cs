@@ -170,6 +170,8 @@ public class NodeManipulator : MonoBehaviour, IPointerDownHandler, IPointerUpHan
                 return new randomSelector();
             case 13:
                 return new resetRandomNode();
+            case 14:
+                return new timerSequence();
             default:
                 return null;
         }
