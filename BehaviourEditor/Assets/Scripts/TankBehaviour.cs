@@ -54,7 +54,6 @@ public class TankBehaviour : MonoBehaviour {
     // Shoot command
     public void shoot()
     {
-        timer += Time.deltaTime;
         if (timer >= shootingCooldown)
         {
             // Instantiate new bullet
@@ -94,6 +93,11 @@ public class TankBehaviour : MonoBehaviour {
     public bool foundEnemy()
     {
         return sight.enemyInSight();
+    }
+
+    void Update()
+    {
+        timer += Time.deltaTime;
     }
 
 }

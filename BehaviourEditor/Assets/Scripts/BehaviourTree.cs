@@ -274,6 +274,7 @@ public class shootNode : EndNode
     }
     public override Response tick(ref TankBehaviour tank)
     {
+        Debug.Log("Shooting!");
         tank.shoot();
         return Response.success;
     }
@@ -410,7 +411,7 @@ public class timerSequence : Node
             // Reset time
             time0 = time1 = Time.time;
 
-            Debug.Log("Firing!");
+            Debug.Log("TimeOut!");
             // REGULAR SEQUENCE IF TIMEOUT
             // Iterate through all children to try and find one that fails or is running
             foreach (Node n in children)
